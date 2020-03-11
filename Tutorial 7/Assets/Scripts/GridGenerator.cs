@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,21 +26,19 @@ public class GridGenerator : MonoBehaviour
 
     public void GenerateGrid()
     {
+        DeleteAllChildren(transform);
+        obstacles.Clear();
+
         // Place Obstacles
         int obstaclesToCreate = NumberOfObstacles;
         while (obstaclesToCreate > 0)
         {
-            var positionX = Random.Range(0, Width);
-            var positionZ = Random.Range(0, Height);
-            var obstacle = Instantiate(Obstacle, new Vector3(positionX, 0.5f, positionZ), Quaternion.identity);
-
-            if (IsCellOccupied(obstacle.transform.position))
+            var obstacle = CreateAtRandomPosition(Obstacle, 0.5f);
+            if(obstacle != null)
             {
-                continue;
+                obstacles.Add(obstacle.transform.position);
+                obstaclesToCreate--;
             }
-
-            obstacles.Add(obstacle.transform.position);
-            obstaclesToCreate--;
         }
 
         // Place Walkable tiles
@@ -52,6 +51,35 @@ public class GridGenerator : MonoBehaviour
                     Instantiate(WalkableTile, new Vector3(x, 0.05f, z), Quaternion.identity, transform);
                 }
             }
+        }
+
+        // Place Player and Goal
+        while(!CreateAtRandomPosition(Player, 1f));
+        while(!CreateAtRandomPosition(Goal, 0.5f));
+    }
+
+    private GameObject CreateAtRandomPosition(GameObject prefab, float PositionY)
+    {
+        var positionX = UnityEngine.Random.Range(0, Width);
+        var positionZ = UnityEngine.Random.Range(0, Height);
+
+        if (IsCellOccupied(new Vector3(positionX, 0, positionZ)))
+        {
+            Debug.Log("CELL OCCUPIED - Recreating: " + prefab.name);
+            return null;
+        }
+        else
+        {
+            var newGameObject = Instantiate(prefab, new Vector3(positionX, PositionY, positionZ), Quaternion.identity, transform);
+            return newGameObject;
+        }
+    }
+
+    private void DeleteAllChildren(Transform parentGameObject)
+    {
+        foreach (Transform item in parentGameObject)
+        {
+            Destroy(item.gameObject);
         }
     }
 
