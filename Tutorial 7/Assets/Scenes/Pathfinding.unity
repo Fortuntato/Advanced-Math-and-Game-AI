@@ -349,10 +349,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.9339623, g: 0.17181383, b: 0.17181383, a: 1}
-    m_HighlightedColor: {r: 0.8113208, g: 0.17221434, b: 0.17221434, a: 1}
-    m_PressedColor: {r: 0.8117647, g: 0.17254902, b: 0.17254902, a: 1}
-    m_SelectedColor: {r: 0.93333334, g: 0.17254902, b: 0.17254902, a: 1}
+    m_NormalColor: {r: 0.17254901, g: 0.6715348, b: 0.93333334, a: 1}
+    m_HighlightedColor: {r: 0.13995194, g: 0.57669246, b: 0.8018868, a: 1}
+    m_PressedColor: {r: 0.14117648, g: 0.5803922, b: 0.8039216, a: 1}
+    m_SelectedColor: {r: 0.17254902, g: 0.6745098, b: 0.93333334, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -674,6 +674,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1264252169}
   - component: {fileID: 1264252168}
+  - component: {fileID: 1264252170}
   m_Layer: 0
   m_Name: Algorithms
   m_TagString: Untagged
@@ -708,6 +709,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1264252170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1264252167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61ba221223e68ec4e92bd5f3a508ce44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GridData: {fileID: 2133346743}
 --- !u!1 &1436233061
 GameObject:
   m_ObjectHideFlags: 0
@@ -1067,10 +1081,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.9339623, g: 0.17181383, b: 0.17181383, a: 1}
-    m_HighlightedColor: {r: 0.8113208, g: 0.17221434, b: 0.17221434, a: 1}
-    m_PressedColor: {r: 0.8117647, g: 0.17254902, b: 0.17254902, a: 1}
-    m_SelectedColor: {r: 0.93333334, g: 0.17254902, b: 0.17254902, a: 1}
+    m_NormalColor: {r: 0.17254902, g: 0.67058825, b: 0.93333334, a: 1}
+    m_HighlightedColor: {r: 0.14117648, g: 0.5764706, b: 0.8, a: 1}
+    m_PressedColor: {r: 0.14117648, g: 0.5764706, b: 0.8, a: 1}
+    m_SelectedColor: {r: 0.17254902, g: 0.67058825, b: 0.93333334, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -1090,8 +1104,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2133346743}
-        m_MethodName: GenerateGrid
+      - m_Target: {fileID: 1264252170}
+        m_MethodName: StartDFS
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1284,9 +1298,11 @@ MonoBehaviour:
   Goal: {fileID: 6587279916183025363, guid: c1270ea74a8227f44bb28b9e2145415b, type: 3}
   Obstacle: {fileID: 839958056252762778, guid: 836563c19fb1f7d42a70b76f40ba663e, type: 3}
   Obstacles: []
+  WalkableCells: []
+  StartNode: {x: 0, y: 0, z: 0}
+  GoalNode: {x: 0, y: 0, z: 0}
   ShowTiles: 1
   WalkableTile: {fileID: 5923714562943074243, guid: 66257f870d335a54495fda4fa28c6dde,
     type: 3}
   PathTile: {fileID: 8583482628934572476, guid: e7254353771789b4b9a55d5f7557d185,
     type: 3}
-  Grid: []

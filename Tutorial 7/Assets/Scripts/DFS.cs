@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BFS : MonoBehaviour
+public class DFS : MonoBehaviour
 {
     public GridGenerator GridData;
     private List<Vector3> visitedNodes;
-    private Queue<Vector3> queue;
+    private Stack<Vector3> stack;
     // Keep track of visited notes + which nodes did we get from
     // Necessary later for building the path
     Dictionary<Vector3, Vector3> nodeParents;
@@ -15,21 +15,21 @@ public class BFS : MonoBehaviour
     void Start()
     {
         visitedNodes = new List<Vector3>();
-        queue = new Queue<Vector3>();
+        stack = new Stack<Vector3>();
         nodeParents = new Dictionary<Vector3, Vector3>();
     }
 
-    public void StartBFS()
+    public void StartDFS()
     {
         // Necessary when generating a new grid and starting a new search
         ClearLists();
 
-        queue.Enqueue(GridData.StartNode);
+        stack.Push(GridData.StartNode);
         visitedNodes.Add(GridData.StartNode);
 
-        while (queue.Count != 0)
+        while (stack.Count != 0)
         {
-            var currentNode = queue.Dequeue();
+            var currentNode = stack.Pop();
 
             if(currentNode == GridData.GoalNode)
             {
@@ -42,7 +42,7 @@ public class BFS : MonoBehaviour
             {
                 if(!visitedNodes.Contains(item))
                 {
-                    queue.Enqueue(item);
+                    stack.Push(item);
                     visitedNodes.Add(item);
                     nodeParents.Add(item, currentNode);
                 }
@@ -55,7 +55,7 @@ public class BFS : MonoBehaviour
     private void ClearLists()
     {
         visitedNodes.Clear();
-        queue.Clear();
+        stack.Clear();
         nodeParents.Clear();
     }
 }
