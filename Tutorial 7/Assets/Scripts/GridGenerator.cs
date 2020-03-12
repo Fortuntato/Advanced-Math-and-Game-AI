@@ -11,7 +11,14 @@ public class GridGenerator : MonoBehaviour
     public GameObject Player;
     public GameObject Goal;
     public GameObject Obstacle;
-    private List<Vector3> obstacles;
+    [HideInInspector]
+    public List<Vector3> Obstacles;
+    [HideInInspector]
+    public List<Vector3> WalkableCells;
+    [HideInInspector]
+    public Vector3 StartNode;
+    [HideInInspector]
+    public Vector3 GoalNode;
     [Header("Debugging")]
     public bool ShowTiles;
     public GameObject WalkableTile;
@@ -20,23 +27,23 @@ public class GridGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        obstacles = new List<Vector3>();
+        Obstacles = new List<Vector3>();
         GenerateGrid();
     }
 
     public void GenerateGrid()
     {
         DeleteAllChildren(transform);
-        obstacles.Clear();
+        Obstacles.Clear();
 
         // Place Obstacles
         int obstaclesToCreate = NumberOfObstacles;
         while (obstaclesToCreate > 0)
         {
             var obstacle = CreateAtRandomPosition(Obstacle, 0.5f);
-            if(obstacle != null)
+            if (obstacle != null)
             {
-                obstacles.Add(obstacle.transform.position);
+                Obstacles.Add(obstacle.transform.position);
                 obstaclesToCreate--;
             }
         }
@@ -48,14 +55,66 @@ public class GridGenerator : MonoBehaviour
             {
                 if (!IsCellOccupied(new Vector3(x, 0, z)))
                 {
-                    Instantiate(WalkableTile, new Vector3(x, 0.05f, z), Quaternion.identity, transform);
+                    var tile = Instantiate(WalkableTile, new Vector3(x, 0.05f, z), Quaternion.identity, transform);
+                    WalkableCells.Add(new Vector3(x, 0, z));
                 }
             }
         }
 
         // Place Player and Goal
-        while(!CreateAtRandomPosition(Player, 1f));
-        while(!CreateAtRandomPosition(Goal, 0.5f));
+        GameObject startGameObject;
+        while ((startGameObject = CreateAtRandomPosition(Player, 0f)) == null);
+        StartNode = startGameObject.transform.position;
+
+        GameObject goalGameObject;
+        while ((goalGameObject = CreateAtRandomPosition(Goal, 0f)) == null);
+        GoalNode = goalGameObject.transform.position;
+    }
+
+    public List<Vector3> GetNearbyNodes(Vector3 currentNode)
+    {
+        var result = new List<Vector3>();
+        for (int z = -1; z <= 1; z++)
+        {
+            for (int x = -1; x <= 1; x++)
+            {
+                // Check if the currentNode is at the edge
+                if (currentNode.x + x < 0 || currentNode.x + x >= Width)
+                    continue;
+                if (currentNode.z + z < 0 || currentNode.z + z >= Height)
+                    continue;
+                // Don't consider the currentNode
+                if (x == 0 && z == 0)
+                    continue;
+
+                var node = new Vector3(currentNode.x + x, 0, currentNode.z + z);
+                if(!IsCellOccupied(node))
+                {
+                    result.Add(node);
+                }
+            }
+        }
+        return result;
+    }
+
+    public void BuildPath(Dictionary<Vector3, Vector3> nodeParents)
+    {
+        List<Vector3> path = new List<Vector3>();
+        Vector3 curr = GoalNode;
+        while (curr != StartNode)
+        {
+            path.Add(curr);
+            curr = nodeParents[curr];
+        }
+
+        ShowPath(path);
+    }
+    private void ShowPath(List<Vector3> nodes)
+    {
+        for (int i = nodes.Count - 1; i > 0; i--)
+        {
+            var newGameObject = Instantiate(PathTile, new Vector3(nodes[i].x, 0.1f, nodes[i].z), Quaternion.identity, transform);
+        }
     }
 
     private GameObject CreateAtRandomPosition(GameObject prefab, float PositionY)
@@ -85,9 +144,9 @@ public class GridGenerator : MonoBehaviour
 
     private bool IsCellOccupied(Vector3 position)
     {
-        foreach (var item in obstacles)
+        foreach (var item in Obstacles)
         {
-            if(item.x == position.x && item.z == position.z)
+            if (item.x == position.x && item.z == position.z)
             {
                 return true;
             }
