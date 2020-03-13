@@ -76,32 +76,6 @@ public class GridGenerator : MonoBehaviour
         WalkableCells.Clear();
     }
 
-    public List<Vector3> GetNearbyNodes(Vector3 currentNode)
-    {
-        var result = new List<Vector3>();
-        for (int z = -1; z <= 1; z++)
-        {
-            for (int x = -1; x <= 1; x++)
-            {
-                // Check if the currentNode is at the edge
-                if (currentNode.x + x < 0 || currentNode.x + x >= Width)
-                    continue;
-                if (currentNode.z + z < 0 || currentNode.z + z >= Height)
-                    continue;
-                // Don't consider the currentNode
-                if (x == 0 && z == 0)
-                    continue;
-
-                var node = new Vector3(currentNode.x + x, 0, currentNode.z + z);
-                if(!IsCellOccupied(node))
-                {
-                    result.Add(node);
-                }
-            }
-        }
-        return result;
-    }
-
     public IList<Vector3> GetWalkableNodes(Vector3 curr)
     {
 

@@ -46,7 +46,6 @@ public class Dijkstra : MonoBehaviour
             {
                 // If the goal position is the lowest position in the priority queue then there are
                 //    no other nodes that could possibly have a shorter path.
-                print("Dijkstra: " + distances[GridData.StartNode]);
                 print("Dijkstra time: " + (Time.realtimeSinceStartup - timeNow).ToString());
                 print(string.Format("Dijkstra visits: {0} ({1:F2}%)", nodeVisitCount, (nodeVisitCount / (double)GridData.WalkableCells.Count) * 100));
 

@@ -24,15 +24,21 @@ public class BFS : MonoBehaviour
         // Necessary when generating a new grid and starting a new search
         ClearLists();
 
+        uint nodeVisitCount = 0;
+        float timeNow = Time.realtimeSinceStartup;
+
         queue.Enqueue(GridData.StartNode);
         visitedNodes.Add(GridData.StartNode);
 
         while (queue.Count != 0)
         {
             var currentNode = queue.Dequeue();
+            nodeVisitCount++;
 
-            if(currentNode == GridData.GoalNode)
+            if (currentNode == GridData.GoalNode)
             {
+                print("BFS time: " + (Time.realtimeSinceStartup - timeNow).ToString());
+                print(string.Format("BFS visits: {0} ({1:F2}%)", nodeVisitCount, (nodeVisitCount / (double)GridData.WalkableCells.Count) * 100));
                 GridData.BuildPath(nodeParents);
                 return;
             }
