@@ -8,17 +8,13 @@ using UnityEngine;
 public class Dijkstra : MonoBehaviour
 {
     public GridGenerator GridData;
-    private SimplePriorityQueue<Vector3, int> priorityQueue;
-    private Dictionary<Vector3, int> distances;
     // Keep track of all visited notes + which node we got from
     // Necessary later for building the path
-    Dictionary<Vector3, Vector3> nodeParents;
+    IDictionary<Vector3, Vector3> nodeParents;
     // Start is called before the first frame update
     void Start()
     {
-        priorityQueue = new SimplePriorityQueue<Vector3, int>();
         nodeParents = new Dictionary<Vector3, Vector3>();
-        distances = new Dictionary<Vector3, int>();
     }
 
     public void StartDijkstra()
@@ -26,38 +22,57 @@ public class Dijkstra : MonoBehaviour
         // Necessary when generating a new grid and starting a new search
         ClearLists();
 
-        //GridData.StartNode = new Vector3(0,0,0);
-        //GridData.GoalNode = new Vector3(29f, 0, 29f);
+        uint nodeVisitCount = 0;
+        float timeNow = Time.realtimeSinceStartup;
 
-        // If you move this line to Start it won't work as WalkableCells is not set yet
-        distances = GridData.WalkableCells.ToDictionary(x => x, y => int.MaxValue);
+        //A priority queue containing the shortest distance so far from the start to a given node
+        IPriorityQueue<Vector3, int> priority = new SimplePriorityQueue<Vector3, int>();
 
+        //A list of all nodes that are walkable, initialized to have infinity distance from start
+        IDictionary<Vector3, int> distances = GridData.WalkableCells
+            .ToDictionary(x => x, x => int.MaxValue);
+
+        //Our distance from the start to itself is 0
         distances[GridData.StartNode] = 0;
-        priorityQueue.Enqueue(GridData.StartNode, 0);
+        priority.Enqueue(GridData.StartNode, 0);
 
-        while (priorityQueue.Count > 0)
+        while (priority.Count > 0)
         {
-            var currentNode = priorityQueue.Dequeue();
 
-            if(currentNode == GridData.GoalNode)
+            Vector3 curr = priority.Dequeue();
+            nodeVisitCount++;
+
+            if (curr == GridData.GoalNode)
             {
+                // If the goal position is the lowest position in the priority queue then there are
+                //    no other nodes that could possibly have a shorter path.
+                print("Dijkstra: " + distances[GridData.StartNode]);
+                print("Dijkstra time: " + (Time.realtimeSinceStartup - timeNow).ToString());
+                print(string.Format("Dijkstra visits: {0} ({1:F2}%)", nodeVisitCount, (nodeVisitCount / (double)GridData.WalkableCells.Count) * 100));
+
                 GridData.BuildPath(nodeParents);
                 return;
             }
 
-            var nearbyNodes = GridData.GetNearbyNodes(currentNode);
-            foreach (var item in nearbyNodes)
+            IList<Vector3> nodes = GridData.GetWalkableNodes(curr);
+
+            //Look at each neighbor to the node
+            foreach (Vector3 node in nodes)
             {
-                var currDistance = distances[currentNode]; // 1 is the weight
-                var itemDistance = distances[item];
-                if (currDistance < itemDistance)
+
+                int dist = distances[curr] + 1;
+
+                //If the distance to the parent, PLUS the distance added by the neighbor,
+                //is less than the current distance to the neighbor,
+                //update the neighbor's paent to curr, update its current best distance
+                if (dist < distances[node])
                 {
-                    distances[item] = currDistance;
-                    //nodeParents[item] = currentNode;
-                    if (!priorityQueue.Contains(item))
+                    distances[node] = dist;
+
+                    if (!priority.Contains(node))
                     {
-                        priorityQueue.Enqueue(item, currDistance);
-                        nodeParents.Add(item, currentNode);
+                        nodeParents.Add(node, curr);
+                        priority.Enqueue(node, dist);
                     }
                 }
             }
@@ -68,8 +83,6 @@ public class Dijkstra : MonoBehaviour
 
     private void ClearLists()
     {
-        distances.Clear();
-        priorityQueue.Clear();
         nodeParents.Clear();
     }
 }

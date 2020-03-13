@@ -10,7 +10,7 @@ public class DFS : MonoBehaviour
     private Stack<Vector3> stack;
     // Keep track of visited notes + which nodes did we get from
     // Necessary later for building the path
-    Dictionary<Vector3, Vector3> nodeParents;
+    IDictionary<Vector3, Vector3> nodeParents;
     // Start is called before the first frame update
     void Start()
     {

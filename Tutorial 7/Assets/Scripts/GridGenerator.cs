@@ -102,7 +102,34 @@ public class GridGenerator : MonoBehaviour
         return result;
     }
 
-    public void BuildPath(Dictionary<Vector3, Vector3> nodeParents)
+    public IList<Vector3> GetWalkableNodes(Vector3 curr)
+    {
+
+        IList<Vector3> walkableNodes = new List<Vector3>();
+
+        IList<Vector3> possibleNodes = new List<Vector3>() {
+            new Vector3 (curr.x + 1, 0, curr.z),
+            new Vector3 (curr.x - 1, 0, curr.z),
+            new Vector3 (curr.x, 0, curr.z + 1),
+            new Vector3 (curr.x, 0, curr.z - 1),
+            new Vector3 (curr.x + 1, 0, curr.z + 1),
+            new Vector3 (curr.x + 1, 0, curr.z - 1),
+            new Vector3 (curr.x - 1, 0, curr.z + 1),
+            new Vector3 (curr.x - 1, 0, curr.z - 1)
+        };
+
+        foreach (Vector3 node in possibleNodes)
+        {
+            if (!IsCellOccupied(node) && (node.x >= 0 && node.x <= Width - 1) && (node.z >= 0 && node.z <= Height - 1))
+            {
+                walkableNodes.Add(node);
+            }
+        }
+
+        return walkableNodes;
+    }
+
+    public void BuildPath(IDictionary<Vector3, Vector3> nodeParents)
     {
         List<Vector3> path = new List<Vector3>();
         Vector3 curr = GoalNode;

@@ -52,7 +52,7 @@ public class AStar : MonoBehaviour
                 return;
             }
 
-            var nearbyNodes = GridData.GetNearbyNodes(currentNode);
+            var nearbyNodes = GridData.GetWalkableNodes(currentNode);
             foreach (var item in nearbyNodes)
             {
                 var currentScore = distanceFromStart[currentNode] + 1; // 1 is the weight

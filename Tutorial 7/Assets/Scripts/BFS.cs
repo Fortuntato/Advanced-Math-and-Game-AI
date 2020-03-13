@@ -10,7 +10,7 @@ public class BFS : MonoBehaviour
     private Queue<Vector3> queue;
     // Keep track of visited notes + which nodes did we get from
     // Necessary later for building the path
-    Dictionary<Vector3, Vector3> nodeParents;
+    IDictionary<Vector3, Vector3> nodeParents;
     // Start is called before the first frame update
     void Start()
     {
@@ -37,7 +37,7 @@ public class BFS : MonoBehaviour
                 return;
             }
 
-            var nearbyNodes = GridData.GetNearbyNodes(currentNode);
+            var nearbyNodes = GridData.GetWalkableNodes(currentNode);
             foreach (var item in nearbyNodes)
             {
                 if(!visitedNodes.Contains(item))
