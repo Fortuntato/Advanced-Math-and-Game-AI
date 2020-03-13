@@ -20,7 +20,6 @@ public class GridGenerator : MonoBehaviour
     [HideInInspector]
     public Vector3 GoalNode;
     [Header("Debugging")]
-    public bool ShowTiles;
     public GameObject WalkableTile;
     public GameObject PathTile;
 
@@ -33,8 +32,7 @@ public class GridGenerator : MonoBehaviour
 
     public void GenerateGrid()
     {
-        DeleteAllChildren(transform);
-        Obstacles.Clear();
+        ClearLists();
 
         // Place Obstacles
         int obstaclesToCreate = NumberOfObstacles;
@@ -69,6 +67,13 @@ public class GridGenerator : MonoBehaviour
         GameObject goalGameObject;
         while ((goalGameObject = CreateAtRandomPosition(Goal, 0f)) == null);
         GoalNode = goalGameObject.transform.position;
+    }
+
+    private void ClearLists()
+    {
+        DeleteAllChildren(transform);
+        Obstacles.Clear();
+        WalkableCells.Clear();
     }
 
     public List<Vector3> GetNearbyNodes(Vector3 currentNode)
