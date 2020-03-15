@@ -11,6 +11,7 @@ public class KMeans : MonoBehaviour
     public GameObject Centroid;
     public int Points;
     public int Centroids;
+    public Transform CentroidsHolder;
     private List<GameObject> points;
     private List<GameObject> centroids;
     private List<Color> colors;
@@ -25,12 +26,12 @@ public class KMeans : MonoBehaviour
         StartKMeansClustering();
     }
 
-    private void Cluster()
+    public void Cluster()
     {
         // Reset clusterData
         clusteredPoints.Clear();
 
-        // Populate centroids
+        // Populate cluster dictionary
         for (int i = 0; i < Centroids; i++)
         {
             clusteredPoints.Add(centroids[i], new List<GameObject>());
@@ -54,8 +55,19 @@ public class KMeans : MonoBehaviour
             clusteredPoints[closestCentroid].Add(points[i]);
         }
 
-        // Set colors
-        int clusterCounter = 0;
+        // Check if there is a cluster with no elements
+        foreach (var cluster in clusteredPoints)
+        {
+            if(cluster.Value.Count == 0)
+            {
+                var closestPoint = GetClosestPoint(cluster.Key.transform.position);
+                RemovePointFromClusters(closestPoint);
+                cluster.Value.Add(closestPoint);
+            }
+        }
+
+            // Set colors
+            int clusterCounter = 0;
         foreach (var cluster in clusteredPoints)
         {
             foreach (var point in cluster.Value)
@@ -65,15 +77,65 @@ public class KMeans : MonoBehaviour
             clusterCounter++;
         }
 
+        clusterCounter = 0;
         // Recompute positions for centroids
+        foreach (var cluster in clusteredPoints)
+        {
+            Vector3 sum = Vector3.zero;
+            foreach (var point in cluster.Value)
+            {
+                sum += point.transform.position;
+            }
+            var average = sum / cluster.Value.Count;
+            centroids[clusterCounter].transform.position = average;
 
+            clusterCounter++;
+        }
+    }
+
+    private void RemovePointFromClusters(GameObject closestPoint)
+    {
+        GameObject itemToBeRemoved = null;
+        GameObject removeFromCluster = null;
+        foreach (var item in clusteredPoints)
+        {
+            foreach (var point in item.Value)
+            {
+                if(point == closestPoint)
+                {
+                    itemToBeRemoved = point;
+                    removeFromCluster = item.Key;
+                }
+            }
+        }
+
+        if(removeFromCluster)
+        {
+            clusteredPoints[removeFromCluster].Remove(itemToBeRemoved);
+        }
+    }
+
+    private GameObject GetClosestPoint(Vector3 position)
+    {
+        var closestPoint = points[0];
+        var shortestDistance = float.MaxValue;
+        foreach (var item in points)
+        {
+            var currentDistance = Vector3.Distance(item.transform.position, position);
+            if(currentDistance < shortestDistance)
+            {
+                closestPoint = item;
+                shortestDistance = currentDistance;
+            }
+        }
+        return closestPoint;
     }
 
     public void StartKMeansClustering()
     {
         ClearData();
-        points = GenerateGameObjects(Point, Points);
-        centroids = GenerateGameObjects(Centroid, Centroids);
+        points = GenerateGameObjects(Point, Points, transform);
+        centroids = GenerateGameObjects(Centroid, Centroids, CentroidsHolder);
         colors = GenerateColors();
 
         // Set random colors for centroids and add centroids to dictionary
@@ -83,8 +145,6 @@ public class KMeans : MonoBehaviour
         }
 
         Cluster();
-
-
     }
 
     private List<Color> GenerateColors()
@@ -99,22 +159,23 @@ public class KMeans : MonoBehaviour
 
     private void ClearData()
     {
-        DeleteChildren();
+        DeleteChildren(transform);
+        DeleteChildren(CentroidsHolder);
         points.Clear();
         centroids.Clear();
         clusteredPoints.Clear();
         isDoneClostering = false;
     }
 
-    private void DeleteChildren()
+    private void DeleteChildren(Transform parent)
     {
-        foreach (Transform item in transform)
+        foreach (Transform item in parent)
         {
             Destroy(item.gameObject);
         }
     }
 
-    private List<GameObject> GenerateGameObjects(GameObject prefab, int size)
+    private List<GameObject> GenerateGameObjects(GameObject prefab, int size, Transform parent)
     {
         List<GameObject> result = new List<GameObject>();
         for (int i = 0; i < size; i++)
@@ -123,8 +184,7 @@ public class KMeans : MonoBehaviour
             var positionZ = UnityEngine.Random.Range(-Height / 2, Height / 2);
             var newGameObject = Instantiate(prefab, 
                 new Vector3(positionX, prefab.transform.position.y, positionZ),
-                Quaternion.identity, transform
-            );
+                Quaternion.identity, parent);
             result.Add(newGameObject);
         }
 
