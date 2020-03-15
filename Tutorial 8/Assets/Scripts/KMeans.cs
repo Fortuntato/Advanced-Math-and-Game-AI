@@ -11,6 +11,7 @@ public class KMeans : MonoBehaviour
     public GameObject Centroid;
     public int Points;
     public int Centroids;
+    public Transform PointsHolder;
     public Transform CentroidsHolder;
     private List<GameObject> points;
     private List<GameObject> centroids;
@@ -58,7 +59,7 @@ public class KMeans : MonoBehaviour
         // Check if there is a cluster with no elements
         foreach (var cluster in clusteredPoints)
         {
-            if(cluster.Value.Count == 0)
+            if (cluster.Value.Count == 0)
             {
                 var closestPoint = GetClosestPoint(cluster.Key.transform.position);
                 RemovePointFromClusters(closestPoint);
@@ -66,8 +67,8 @@ public class KMeans : MonoBehaviour
             }
         }
 
-            // Set colors
-            int clusterCounter = 0;
+        // Set colors
+        int clusterCounter = 0;
         foreach (var cluster in clusteredPoints)
         {
             foreach (var point in cluster.Value)
@@ -77,8 +78,8 @@ public class KMeans : MonoBehaviour
             clusterCounter++;
         }
 
-        clusterCounter = 0;
         // Recompute positions for centroids
+        clusterCounter = 0;
         foreach (var cluster in clusteredPoints)
         {
             Vector3 sum = Vector3.zero;
@@ -101,7 +102,7 @@ public class KMeans : MonoBehaviour
         {
             foreach (var point in item.Value)
             {
-                if(point == closestPoint)
+                if (point == closestPoint)
                 {
                     itemToBeRemoved = point;
                     removeFromCluster = item.Key;
@@ -109,7 +110,7 @@ public class KMeans : MonoBehaviour
             }
         }
 
-        if(removeFromCluster)
+        if (removeFromCluster)
         {
             clusteredPoints[removeFromCluster].Remove(itemToBeRemoved);
         }
@@ -119,22 +120,26 @@ public class KMeans : MonoBehaviour
     {
         var closestPoint = points[0];
         var shortestDistance = float.MaxValue;
-        foreach (var item in points)
+
+        foreach (var item in clusteredPoints)
         {
-            var currentDistance = Vector3.Distance(item.transform.position, position);
-            if(currentDistance < shortestDistance)
+            foreach (var point in item.Value)
             {
-                closestPoint = item;
-                shortestDistance = currentDistance;
+                var currentDistance = Vector3.Distance(point.transform.position, position);
+                if (currentDistance < shortestDistance && item.Value.Count > 1)
+                {
+                    closestPoint = point;
+                    shortestDistance = currentDistance;
+                }
             }
         }
-        return closestPoint;
+                return closestPoint;
     }
 
     public void StartKMeansClustering()
     {
         ClearData();
-        points = GenerateGameObjects(Point, Points, transform);
+        points = GenerateGameObjects(Point, Points, PointsHolder);
         centroids = GenerateGameObjects(Centroid, Centroids, CentroidsHolder);
         colors = GenerateColors();
 
@@ -159,7 +164,7 @@ public class KMeans : MonoBehaviour
 
     private void ClearData()
     {
-        DeleteChildren(transform);
+        DeleteChildren(PointsHolder);
         DeleteChildren(CentroidsHolder);
         points.Clear();
         centroids.Clear();
@@ -180,9 +185,11 @@ public class KMeans : MonoBehaviour
         List<GameObject> result = new List<GameObject>();
         for (int i = 0; i < size; i++)
         {
-            var positionX = UnityEngine.Random.Range(-Width / 2, Width / 2);
-            var positionZ = UnityEngine.Random.Range(-Height / 2, Height / 2);
-            var newGameObject = Instantiate(prefab, 
+            var positionX = UnityEngine.Random.Range(-Width / 2 + prefab.transform.localScale.x, 
+                Width / 2 - prefab.transform.localScale.x);
+            var positionZ = UnityEngine.Random.Range(-Height / 2 + prefab.transform.localScale.z,
+                Height / 2 - prefab.transform.localScale.z);
+            var newGameObject = Instantiate(prefab,
                 new Vector3(positionX, prefab.transform.position.y, positionZ),
                 Quaternion.identity, parent);
             result.Add(newGameObject);
