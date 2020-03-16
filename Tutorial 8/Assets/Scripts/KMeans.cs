@@ -18,29 +18,84 @@ public class KMeans : MonoBehaviour
     private List<GameObject> centroids;
     private List<Color> colors;
     private Dictionary<GameObject, List<GameObject>> clusteredPoints;
-    private List<GameObject> previousCentroids;
+    private List<Vector3> previousCentroids;
     // Start is called before the first frame update
     void Start()
     {
         points = new List<GameObject>();
         centroids = new List<GameObject>();
-        previousCentroids = new List<GameObject>();
+        previousCentroids = new List<Vector3>();
         clusteredPoints = new Dictionary<GameObject, List<GameObject>>();
         StartKMeansClustering();
     }
 
+    public void StartKMeansClustering()
+    {
+        ClearData();
+        points = GenerateGameObjects(Point, Points, PointsHolder);
+        centroids = GenerateGameObjects(Centroid, Centroids, CentroidsHolder);
+        colors = GenerateColors();
+        SetColorsToCentroids(centroids);
+
+        // Update previousCentroids to the positions of current centroids
+        foreach (var item in centroids)
+        {
+            previousCentroids.Add(item.transform.position);
+        }
+
+        Cluster();
+    }
+
     public void Cluster()
     {
-        // Reset clusterData
+        // 1) Reset clusterData
         clusteredPoints.Clear();
 
-        // Populate cluster dictionary
+        // 2) Populate cluster dictionary
+        InitializeClusterDictionary();
+
+        // 3) Compute distance from each point to each centroid
+        AddPointsToClusters();
+
+        // 4) Check if there is a cluster with no elements
+        CheckForEmptyClusters();
+
+        // 5) Set colors to points from each cluster
+        SetColorToClusterPoints();
+
+        // 6) Recompute positions for centroids
+        RecomputeCentroidPositions();
+
+        // 7) Check if no centroids changed their position
+        CheckForEnd();
+
+        // 8) Update previous centroids to current positions
+        UpdatePreviousCentroids();
+    }
+
+    private void InitializeClusterDictionary()
+    {
         for (int i = 0; i < Centroids; i++)
         {
             clusteredPoints.Add(centroids[i], new List<GameObject>());
         }
+    }
 
-        // Compute distance from each point to each centroid
+    private void SetColorToClusterPoints()
+    {
+        int clusterCounter = 0;
+        foreach (var cluster in clusteredPoints)
+        {
+            foreach (var point in cluster.Value)
+            {
+                point.GetComponent<MeshRenderer>().material.color = colors[clusterCounter];
+            }
+            clusterCounter++;
+        }
+    }
+
+    private void AddPointsToClusters()
+    {
         for (int i = 0; i < Points; i++)
         {
             var pointPosition = points[i].transform.position;
@@ -57,31 +112,11 @@ public class KMeans : MonoBehaviour
             }
             clusteredPoints[closestCentroid].Add(points[i]);
         }
+    }
 
-        // Check if there is a cluster with no elements
-        foreach (var cluster in clusteredPoints)
-        {
-            if (cluster.Value.Count == 0)
-            {
-                var closestPoint = GetClosestPoint(cluster.Key.transform.position);
-                RemovePointFromClusters(closestPoint);
-                cluster.Value.Add(closestPoint);
-            }
-        }
-
-        // Set colors
+    private void RecomputeCentroidPositions()
+    {
         int clusterCounter = 0;
-        foreach (var cluster in clusteredPoints)
-        {
-            foreach (var point in cluster.Value)
-            {
-                point.GetComponent<MeshRenderer>().material.color = colors[clusterCounter];
-            }
-            clusterCounter++;
-        }
-
-        // Recompute positions for centroids
-        clusterCounter = 0;
         foreach (var cluster in clusteredPoints)
         {
             Vector3 sum = Vector3.zero;
@@ -94,12 +129,19 @@ public class KMeans : MonoBehaviour
 
             clusterCounter++;
         }
+    }
 
-        // Check if no centroids changed their position
-        CheckForEnd();
-
-        // Update previous centroids to current positions
-        UpdatePreviousCentroids();
+    private void CheckForEmptyClusters()
+    {
+        foreach (var cluster in clusteredPoints)
+        {
+            if (cluster.Value.Count == 0)
+            {
+                var closestPoint = GetClosestPoint(cluster.Key.transform.position);
+                RemovePointFromClusters(closestPoint);
+                cluster.Value.Add(closestPoint);
+            }
+        }
     }
 
     private void CheckForEnd()
@@ -107,7 +149,7 @@ public class KMeans : MonoBehaviour
         int centroidsChanged = 0;
         for (int i = 0; i < centroids.Count; i++)
         {
-            if (centroids[i].transform.position != previousCentroids[i].transform.position)
+            if (centroids[i].transform.position != previousCentroids[i])
             {
                 centroidsChanged++;
             }
@@ -122,7 +164,7 @@ public class KMeans : MonoBehaviour
     {
         for (int i = 0; i < centroids.Count; i++)
         {
-            previousCentroids[i].transform.position = centroids[i].transform.position;
+            previousCentroids[i] = centroids[i].transform.position;
         }
     }
 
@@ -168,27 +210,13 @@ public class KMeans : MonoBehaviour
         return closestPoint;
     }
 
-    public void StartKMeansClustering()
+    private void SetColorsToCentroids(List<GameObject> gameObjects)
     {
-        ClearData();
-        points = GenerateGameObjects(Point, Points, PointsHolder);
-        centroids = GenerateGameObjects(Centroid, Centroids, CentroidsHolder);
-        colors = GenerateColors();
-
         // Set random colors for centroids and add centroids to dictionary
-        for (int i = 0; i < Centroids; i++)
+        for (int i = 0; i < gameObjects.Count; i++)
         {
-            centroids[i].GetComponent<MeshRenderer>().material.color = colors[i];
+            gameObjects[i].GetComponent<MeshRenderer>().material.color = colors[i];
         }
-
-        // Update previousCentroids to current centroids
-        // Create new GameObjects instead of duplicating list elements (would require deep copy)
-        foreach (var item in centroids)
-        {
-            previousCentroids.Add(new GameObject());
-        }
-
-        Cluster();
     }
 
     private List<Color> GenerateColors()
