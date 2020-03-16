@@ -13,16 +13,18 @@ public class KMeans : MonoBehaviour
     public int Centroids;
     public Transform PointsHolder;
     public Transform CentroidsHolder;
+    public GameObject DoneText;
     private List<GameObject> points;
     private List<GameObject> centroids;
     private List<Color> colors;
     private Dictionary<GameObject, List<GameObject>> clusteredPoints;
-    private bool isDoneClostering;
+    private List<GameObject> previousCentroids;
     // Start is called before the first frame update
     void Start()
     {
         points = new List<GameObject>();
         centroids = new List<GameObject>();
+        previousCentroids = new List<GameObject>();
         clusteredPoints = new Dictionary<GameObject, List<GameObject>>();
         StartKMeansClustering();
     }
@@ -92,6 +94,36 @@ public class KMeans : MonoBehaviour
 
             clusterCounter++;
         }
+
+        // Check if no centroids changed their position
+        CheckForEnd();
+
+        // Update previous centroids to current positions
+        UpdatePreviousCentroids();
+    }
+
+    private void CheckForEnd()
+    {
+        int centroidsChanged = 0;
+        for (int i = 0; i < centroids.Count; i++)
+        {
+            if (centroids[i].transform.position != previousCentroids[i].transform.position)
+            {
+                centroidsChanged++;
+            }
+        }
+        if (centroidsChanged == 0)
+        {
+            DoneText.SetActive(true);
+        }
+    }
+
+    private void UpdatePreviousCentroids()
+    {
+        for (int i = 0; i < centroids.Count; i++)
+        {
+            previousCentroids[i].transform.position = centroids[i].transform.position;
+        }
     }
 
     private void RemovePointFromClusters(GameObject closestPoint)
@@ -133,7 +165,7 @@ public class KMeans : MonoBehaviour
                 }
             }
         }
-                return closestPoint;
+        return closestPoint;
     }
 
     public void StartKMeansClustering()
@@ -147,6 +179,13 @@ public class KMeans : MonoBehaviour
         for (int i = 0; i < Centroids; i++)
         {
             centroids[i].GetComponent<MeshRenderer>().material.color = colors[i];
+        }
+
+        // Update previousCentroids to current centroids
+        // Create new GameObjects instead of duplicating list elements (would require deep copy)
+        foreach (var item in centroids)
+        {
+            previousCentroids.Add(new GameObject());
         }
 
         Cluster();
@@ -169,7 +208,7 @@ public class KMeans : MonoBehaviour
         points.Clear();
         centroids.Clear();
         clusteredPoints.Clear();
-        isDoneClostering = false;
+        DoneText.SetActive(false);
     }
 
     private void DeleteChildren(Transform parent)
@@ -185,7 +224,7 @@ public class KMeans : MonoBehaviour
         List<GameObject> result = new List<GameObject>();
         for (int i = 0; i < size; i++)
         {
-            var positionX = UnityEngine.Random.Range(-Width / 2 + prefab.transform.localScale.x, 
+            var positionX = UnityEngine.Random.Range(-Width / 2 + prefab.transform.localScale.x,
                 Width / 2 - prefab.transform.localScale.x);
             var positionZ = UnityEngine.Random.Range(-Height / 2 + prefab.transform.localScale.z,
                 Height / 2 - prefab.transform.localScale.z);
@@ -196,11 +235,5 @@ public class KMeans : MonoBehaviour
         }
 
         return result;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }
