@@ -1526,7 +1526,7 @@ MonoBehaviour:
   Centroid: {fileID: 6677042954335103705, guid: 4dbf2ae1a4605e44f87f0d13381ecb38,
     type: 3}
   Points: 15
-  Centroids: 5
+  Centroids: 4
   PointsHolder: {fileID: 1968185522}
   CentroidsHolder: {fileID: 656317301}
   DoneText: {fileID: 1615047941}
