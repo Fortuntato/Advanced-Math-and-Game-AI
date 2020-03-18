@@ -107,7 +107,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FireRate: 2
-  Speed: 20
+  Speed: 10
 --- !u!54 &7642014093821695948
 Rigidbody:
   m_ObjectHideFlags: 0

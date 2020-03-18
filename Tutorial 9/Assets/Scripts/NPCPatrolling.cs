@@ -21,7 +21,7 @@ public class NPCPatrolling : MonoBehaviour
     public Material AttackMaterial;
     public float ChaseUpdateRate = 2f;
     public float ChaseRange = 5f;
-    public float AttachRange = 2.5f;
+    public float AttackRange = 2.5f;
     private NavMeshAgent navMeshAgent;
     private int nextPoint = 0;
     private MeshRenderer meshRenderer;
@@ -57,14 +57,24 @@ public class NPCPatrolling : MonoBehaviour
     private void Attack()
     {
         Debug.Log("Attack");
+
+        // Reset Path so that the NPC does not move at players position
         navMeshAgent.ResetPath();
+
+        // Change the material so that we can see when the NPC is in a different state
         meshRenderer.material = AttackMaterial;
+
+        // Set position and rotation
         var position = transform.position + transform.forward;
         transform.LookAt(Player.position);
-        if (Vector3.Distance(transform.position, Player.position) > AttachRange)
+
+        // Check if Player is out of the Attarange
+        if (Vector3.Distance(transform.position, Player.position) > AttackRange)
         {
             CurrentState = NPCStates.Chase;
         }
+
+        // Apply shoot rate
         if (Time.time > nextShootTime)
         {
             var newBullet = Instantiate(Bullet.gameObject, position, transform.rotation);
@@ -75,21 +85,25 @@ public class NPCPatrolling : MonoBehaviour
 
     private void Chase()
     {
-        //if (Time.time < nextChaseTime)
-        //{
-        //    return;
-        //}
         Debug.Log("Chase");
-        navMeshAgent.ResetPath();
-        meshRenderer.material = ChaseMaterial;
+
+        // Set new destination
         navMeshAgent.SetDestination(Player.position);
-        if (Vector3.Distance(transform.position, Player.position) < AttachRange)
+
+        // Change the material so that we can see when the NPC is in a different state
+        meshRenderer.material = ChaseMaterial;
+
+        // Check if Player is within attack range
+        if (Vector3.Distance(transform.position, Player.position) < AttackRange)
         {
             CurrentState = NPCStates.Attack;
         }
+
+        // Check if Player is out of the range
         if (Vector3.Distance(transform.position, Player.position) > ChaseRange)
         {
-            Debug.Log("Out of range!");
+            Debug.Log("Out of the range - switching to Patrol state!");
+            // Reset previous paths. This will allow NPC to immediatelly continue with patrolling as soon as Player is out of the chase range
             navMeshAgent.ResetPath();
             CurrentState = NPCStates.Patrol;
         }
@@ -104,6 +118,7 @@ public class NPCPatrolling : MonoBehaviour
             CurrentState = NPCStates.Chase;
         }
         
+        // Check if NPC is moving
         if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
         {
             meshRenderer.material = PatrolMaterial;
