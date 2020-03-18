@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour
 
             if(Physics.Raycast(ray, out rayHit))
             {
-                Debug.Log("Mouse position: " + Input.mousePosition);
+                //Debug.Log("Mouse position: " + Input.mousePosition);
                 navMeshAgent.SetDestination(rayHit.point);
             }
         }
