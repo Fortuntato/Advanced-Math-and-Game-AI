@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class Viterbi
 {
-    public static List<char> GetPath()
+    public static List<char> GetPath(List<char> observedStates)
     {
         // Transition probabilities
         float p_ss = 0.8f;
@@ -21,12 +21,6 @@ public static class Viterbi
         // Initial probabilities
         float p_s = 2 / 3f;
         float p_r = 1 / 3f;
-
-        // Observed states
-        var observedStates = new List<char>()
-        {
-            'H', 'H', 'G', 'G', 'G', 'H',
-        };
 
         List<Vector2> probabilities = new List<Vector2>();
         var resultingStates = new List<char>();
